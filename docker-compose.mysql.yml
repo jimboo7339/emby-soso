@@ -1,0 +1,16 @@
+services:
+  emby-soso:
+    environment:
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER:-emby}:${MYSQL_PASSWORD:-emby}@mysql:3306/${MYSQL_DATABASE:-emby_soso}?charset=utf8mb4
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+        required: false
+
+  postgres:
+    profiles: ["never"]
+
+  mysql:
+    profiles: []

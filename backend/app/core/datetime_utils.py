@@ -1,0 +1,16 @@
+from __future__ import annotations
+
+from datetime import datetime, timezone
+
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def ensure_utc(value: datetime | None) -> datetime | None:
+    """SQLite CURRENT_TIMESTAMP 等来源可能是 naive，统一为 UTC aware 再比较。"""
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)

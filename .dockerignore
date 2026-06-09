@@ -1,0 +1,31 @@
+.git
+.github
+.cursor
+agent-transcripts
+**/__pycache__
+**/*.py[cod]
+**/.venv
+**/.pytest_cache
+**/.mypy_cache
+**/*.egg-info
+
+# 本地环境与敏感配置
+.env
+**/.env
+!**/.env.example
+backend/.env
+
+# 本地数据与数据库
+data/
+**/*.db
+**/*.log
+
+# 前端开发产物（镜像内重新构建）
+frontend/node_modules
+frontend/dist
+
+# 文档与 IDE（非运行所需）
+*.md
+!README.md
+.idea
+.vscode
