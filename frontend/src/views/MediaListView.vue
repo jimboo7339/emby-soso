@@ -5,6 +5,7 @@ import {
   NButton,
   NDataTable,
   NInput,
+  NPagination,
   NPopconfirm,
   NSelect,
   NSpace,
@@ -133,6 +134,10 @@ async function loadMedia() {
     });
     items.value = data.items;
     total.value = data.total;
+    if (total.value > 0 && items.value.length === 0 && page.value > 1) {
+      page.value = 1;
+      return;
+    }
   } catch (e) {
     message.error(e instanceof Error ? e.message : "加载失败");
   } finally {
@@ -140,7 +145,22 @@ async function loadMedia() {
   }
 }
 
-watch([page, scrapeStatus], loadMedia);
+function handleSearch() {
+  page.value = 1;
+  void loadMedia();
+}
+
+watch(pageSize, () => {
+  page.value = 1;
+  void loadMedia();
+});
+
+watch(scrapeStatus, () => {
+  page.value = 1;
+  void loadMedia();
+});
+
+watch(page, loadMedia);
 onMounted(loadMedia);
 onActivated(loadMedia);
 </script>
@@ -149,7 +169,7 @@ onActivated(loadMedia);
   <div class="media-list-page">
     <section class="list-toolbar panel">
       <NSpace>
-        <NInput v-model:value="q" placeholder="搜索标题" style="width: 240px" @keyup.enter="loadMedia" />
+        <NInput v-model:value="q" placeholder="搜索标题" style="width: 240px" @keyup.enter="handleSearch" />
         <NSelect
           v-model:value="scrapeStatus"
           :options="statusOptions"
@@ -157,14 +177,28 @@ onActivated(loadMedia);
           style="width: 180px"
           clearable
         />
-        <NButton type="primary" @click="loadMedia">搜索</NButton>
+        <NButton type="primary" @click="handleSearch">搜索</NButton>
       </NSpace>
-      <p class="list-meta">共 {{ total }} 条媒体</p>
+      <p class="list-meta">
+        共 {{ total }} 条媒体
+        <template v-if="total > 0">
+          ，当前第 {{ page }} / {{ Math.max(1, Math.ceil(total / pageSize)) }} 页
+        </template>
+      </p>
     </section>
 
     <NSpin :show="loading">
       <section class="list-table panel">
         <NDataTable :columns="columns" :data="items" :bordered="false" />
+        <div v-if="total > 0" class="list-pagination">
+          <NPagination
+            v-model:page="page"
+            v-model:page-size="pageSize"
+            :item-count="total"
+            :page-sizes="[20, 50, 100]"
+            show-size-picker
+          />
+        </div>
       </section>
     </NSpin>
   </div>
@@ -211,5 +245,11 @@ onActivated(loadMedia);
 
 .list-table :deep(.n-data-table-tr:hover .n-data-table-td) {
   background: #f5f7fb;
+}
+
+.list-pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 8px 8px;
 }
 </style>

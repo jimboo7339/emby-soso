@@ -1,0 +1,36 @@
+# 宿主机部署：仅运行 emby-soso 应用，连接已有的 PostgreSQL 与 Redis（均无容器）
+#
+# 前置步骤：
+#   1. 在宿主机 PG 上执行 scripts/init-postgres.sh 创建用户/库
+#   2. 配置 PG 允许 Docker 网段访问（见 scripts/pg_hba.example.conf）
+#   3. cp .env.host.example .env 并填写 DATABASE_URL、路径、TMDB_API_KEY
+#
+# 启动：
+#   docker compose -f docker-compose.host.yml pull
+#   docker compose -f docker-compose.host.yml up -d
+
+services:
+  emby-soso:
+    image: ${EMBY_SOSO_IMAGE:-ghcr.io/jimboo7339/emby-soso:latest}
+    container_name: emby-soso
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    extra_hosts:
+      # Linux 下让容器通过 host.docker.internal 访问宿主机 PG / Redis
+      - "host.docker.internal:host-gateway"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?请在 .env 中设置 DATABASE_URL}
+      REDIS_URL: ${REDIS_URL:-redis://host.docker.internal:6379/0}
+      REDIS_ENABLED: ${REDIS_ENABLED:-true}
+      TMDB_API_KEY: ${TMDB_API_KEY:-}
+      TMDB_BASE_URL: ${TMDB_BASE_URL:-https://api.themoviedb.org/3}
+      TMDB_LANGUAGE: ${TMDB_LANGUAGE:-zh-CN}
+      DATA_SOURCE_ROOT: ${DATA_SOURCE_ROOT:-/data/source}
+      DATA_LIBRARY_ROOT: ${DATA_LIBRARY_ROOT:-/data/library}
+      SCHEDULER_ENABLED: ${SCHEDULER_ENABLED:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      WEB_WORKERS: ${WEB_WORKERS:-2}
+    volumes:
+      - ${SOURCE_VOLUME:?请在 .env 中设置 SOURCE_VOLUME}:/data/source
+      - ${LIBRARY_VOLUME:?请在 .env 中设置 LIBRARY_VOLUME}:/data/library
+    restart: unless-stopped

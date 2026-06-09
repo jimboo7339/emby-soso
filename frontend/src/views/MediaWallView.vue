@@ -118,8 +118,20 @@ function stopHeroRotation() {
 async function loadMedia() {
   loading.value = true;
   try {
-    const data = await fetchMedia({ page: 1, page_size: 100 });
-    items.value = data.items;
+    const all: MediaItem[] = [];
+    const batchSize = 100;
+    let page = 1;
+    let total = 0;
+
+    do {
+      const data = await fetchMedia({ page, page_size: batchSize });
+      total = data.total;
+      all.push(...data.items);
+      if (data.items.length === 0) break;
+      page += 1;
+    } while (all.length < total);
+
+    items.value = all;
     heroIndex.value = 0;
     startHeroRotation();
   } catch (e) {

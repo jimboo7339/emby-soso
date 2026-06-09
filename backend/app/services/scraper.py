@@ -41,7 +41,11 @@ from app.services.nfo_writer import (
     write_show_artwork,
     write_tvshow_nfo_file,
 )
-from app.services.scrape_config import apply_media_scrape_scope, TV_ONLY_SCRAPE_FIELDS
+from app.services.scrape_config import (
+    apply_media_scrape_scope,
+    resolve_scrape_options,
+    TV_ONLY_SCRAPE_FIELDS,
+)
 from app.services.tmdb_client import TmdbClientSync
 from app.services.tmdb_images import pick_image
 from app.services.tmdb_settings import get_tmdb_config, normalize_scrape_concurrency

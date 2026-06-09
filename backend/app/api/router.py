@@ -41,7 +41,7 @@ from app.services.library_cleanup import (
     reset_media_item,
 )
 from app.services.matcher import apply_manual_match
-from app.services.scrape_config import TV_ONLY_SCRAPE_FIELDS
+from app.services.scrape_config import resolve_scrape_options, TV_ONLY_SCRAPE_FIELDS
 from app.services.scraper import (
     deduped_scrape_fields,
     refresh_media_scrape_status,
@@ -237,7 +237,11 @@ def list_media(
     if media_type:
         query = query.filter(MediaItem.media_type == media_type)
     if q:
-        query = query.filter(func.lower(MediaItem.title).like(f"%{q.lower()}%"))
+        pattern = f"%{q.lower()}%"
+        query = query.filter(
+            func.lower(MediaItem.title).like(pattern)
+            | func.lower(func.coalesce(MediaItem.original_title, "")).like(pattern)
+        )
 
     total = query.count()
     items = (
