@@ -37,6 +37,17 @@ class Settings(BaseSettings):
 
     static_dir: str = "/app/static"
 
+    auth_enabled: bool = True
+    auth_username: str = "admin"
+    auth_password: str = "admin"
+    auth_secret_key: str = Field(
+        default="change-me-use-a-long-random-string-in-production",
+        description="JWT signing secret",
+    )
+    auth_token_expire_hours: int = Field(default=168, ge=1, le=8760)
+    auth_cookie_name: str = "emby_soso_token"
+    auth_cookie_secure: bool = False
+
     @field_validator("database_url")
     @classmethod
     def normalize_database_url(cls, value: str) -> str:

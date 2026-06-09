@@ -3,7 +3,19 @@ import axios from "axios";
 export const api = axios.create({
   baseURL: "/api/v1",
   timeout: 120000,
+  withCredentials: true,
 });
+
+export interface AuthBootstrap {
+  auth_enabled: boolean;
+  app_display_name: string;
+}
+
+export interface AuthSession {
+  username: string;
+  app_display_name: string;
+  access_token?: string | null;
+}
 
 export interface HealthInfo {
   status: string;
@@ -47,6 +59,7 @@ export interface ScrapeConfig {
 
 export interface SystemSettings {
   scrape_config: ScrapeConfig;
+  app_display_name: string;
   tmdb_api_key_set: boolean;
   tmdb_api_key_masked: string | null;
   tmdb_base_url: string;
@@ -186,6 +199,25 @@ export interface DashboardStats {
   enabled_tasks: number;
 }
 
+export async function authBootstrap() {
+  const { data } = await api.get<AuthBootstrap>("/auth/bootstrap");
+  return data;
+}
+
+export async function authLogin(username: string, password: string) {
+  const { data } = await api.post<AuthSession>("/auth/login", { username, password });
+  return data;
+}
+
+export async function authMe() {
+  const { data } = await api.get<AuthSession>("/auth/me");
+  return data;
+}
+
+export async function authLogout() {
+  await api.post("/auth/logout");
+}
+
 export async function fetchHealth() {
   const { data } = await api.get<HealthInfo>("/health");
   return data;
@@ -203,6 +235,7 @@ export async function fetchSettings() {
 
 export async function updateSettings(payload: {
   scrape_config?: ScrapeConfig;
+  app_display_name?: string;
   tmdb_api_key?: string | null;
   tmdb_base_url?: string;
   tmdb_language?: string;

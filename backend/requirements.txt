@@ -12,3 +12,4 @@ apscheduler>=3.10.4
 redis>=5.2.0
 guessit>=3.8.0
 python-multipart>=0.0.17
+PyJWT>=2.10.0

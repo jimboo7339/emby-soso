@@ -16,11 +16,19 @@ import {
   useMessage,
 } from "naive-ui";
 import { fetchSettings, updateSettings, type ScrapeConfig, type ScrapeOptions } from "@/api";
+import { useAuthStore } from "@/stores/auth";
+
+const auth = useAuthStore();
 
 const message = useMessage();
 const loading = ref(false);
 const saving = ref(false);
 const savingTmdb = ref(false);
+const savingBrand = ref(false);
+
+const brandForm = reactive({
+  app_display_name: "",
+});
 
 const scrapeLabels: Record<keyof ScrapeOptions, string> = {
   basic: "基础信息",
@@ -104,6 +112,7 @@ async function loadSettings() {
     tmdbInfo.config_source = data.tmdb_config_source;
     tmdbInfo.source_root = data.data_source_root;
     tmdbInfo.library_root = data.data_library_root;
+    brandForm.app_display_name = data.app_display_name;
   } catch (e) {
     message.error(e instanceof Error ? e.message : "加载设置失败");
   } finally {
@@ -155,6 +164,23 @@ async function clearTmdbApiKey() {
   }
 }
 
+async function saveBrandSettings() {
+  savingBrand.value = true;
+  try {
+    const name = brandForm.app_display_name.trim();
+    if (!name) {
+      message.warning("系统名称不能为空");
+      return;
+    }
+    await auth.saveDisplayName(name);
+    message.success("系统名称已保存");
+  } catch (e) {
+    message.error(e instanceof Error ? e.message : "保存失败");
+  } finally {
+    savingBrand.value = false;
+  }
+}
+
 async function saveSettings() {
   saving.value = true;
   try {
@@ -173,6 +199,25 @@ onMounted(loadSettings);
 <template>
   <NSpin :show="loading">
     <NSpace vertical size="large">
+      <NCard title="系统外观">
+        <NForm label-placement="left" label-width="120">
+          <NFormItem label="系统名称">
+            <NInput
+              v-model:value="brandForm.app_display_name"
+              placeholder="显示在左上角，例如：我的影视库"
+              maxlength="64"
+              show-count
+            />
+          </NFormItem>
+          <NAlert type="info" style="margin-bottom: 12px">
+            保存后立即更新左侧导航栏标题，登录页也会使用同一名称。
+          </NAlert>
+          <NButton type="primary" :loading="savingBrand" @click="saveBrandSettings">
+            保存系统名称
+          </NButton>
+        </NForm>
+      </NCard>
+
       <NCard title="TMDB 配置">
         <NAlert type="info" style="margin-bottom: 16px">
           在此配置 TMDB API Key 与代理地址，保存后立即生效。留空 API Key 输入框则保持现有密钥不变。

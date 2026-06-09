@@ -50,6 +50,7 @@ class ScrapeConfig(BaseModel):
 
 class SystemSettingsUpdate(BaseModel):
     scrape_config: ScrapeConfig | None = None
+    app_display_name: str | None = None
     tmdb_api_key: str | None = None
     tmdb_base_url: str | None = None
     tmdb_language: str | None = None
@@ -58,6 +59,7 @@ class SystemSettingsUpdate(BaseModel):
 
 class SystemSettingsResponse(BaseModel):
     scrape_config: ScrapeConfig
+    app_display_name: str
     tmdb_api_key_set: bool
     tmdb_api_key_masked: str | None = None
     tmdb_base_url: str
@@ -74,6 +76,26 @@ class HealthResponse(BaseModel):
     redis: str
     scheduler: bool
     mode: str
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    username: str
+    app_display_name: str
+    access_token: str | None = None
+
+
+class LogoutResponse(BaseModel):
+    status: str
+
+
+class AuthBootstrapResponse(BaseModel):
+    auth_enabled: bool
+    app_display_name: str
 
 
 class TaskCreate(BaseModel):

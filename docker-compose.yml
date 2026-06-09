@@ -16,6 +16,12 @@ services:
       SCHEDULER_ENABLED: ${SCHEDULER_ENABLED:-true}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       WEB_WORKERS: ${WEB_WORKERS:-2}
+      AUTH_ENABLED: ${AUTH_ENABLED:-true}
+      AUTH_USERNAME: ${AUTH_USERNAME:-admin}
+      AUTH_PASSWORD: ${AUTH_PASSWORD:-change-me}
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:-change-me-use-a-long-random-string-in-production}
+      AUTH_TOKEN_EXPIRE_HOURS: ${AUTH_TOKEN_EXPIRE_HOURS:-168}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
     volumes:
       - ${SOURCE_VOLUME:-./data/source}:/data/source
       - ${LIBRARY_VOLUME:-./data/library}:/data/library

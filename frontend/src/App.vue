@@ -4,19 +4,23 @@ import { RouterView, useRoute, useRouter } from "vue-router";
 import {
   NBreadcrumb,
   NBreadcrumbItem,
+  NButton,
   NConfigProvider,
   NDialogProvider,
   NLayout,
   NLayoutSider,
   NMenu,
   NMessageProvider,
+  NSpin,
   zhCN,
   dateZhCN,
   type MenuOption,
 } from "naive-ui";
+import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
 const router = useRouter();
+const auth = useAuthStore();
 
 const routeMap: Record<string, string> = {
   dashboard: "/",
@@ -42,6 +46,8 @@ const menuOptions: MenuOption[] = [
   { label: "媒体列表", key: "media" },
   { label: "系统设置", key: "settings" },
 ];
+
+const isLoginPage = computed(() => route.name === "login");
 
 const activeKey = computed(() => {
   const name = route.name?.toString() ?? "dashboard";
@@ -72,22 +78,35 @@ function goTo(path: string | null) {
     router.push(path);
   }
 }
+
+async function handleLogout() {
+  await auth.logout();
+  await router.push("/login");
+}
 </script>
 
 <template>
   <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
     <NMessageProvider>
       <NDialogProvider>
-        <NLayout has-sider class="app-shell">
+        <RouterView v-if="isLoginPage" />
+
+        <NSpin v-else-if="!auth.ready" size="large" style="margin: 120px auto; display: block" />
+
+        <NLayout v-else has-sider class="app-shell">
           <NLayoutSider bordered :width="220" collapse-mode="width" class="app-sider">
             <div class="app-brand">
-              <span class="app-brand-text">emby-soso</span>
+              <span class="app-brand-text">{{ auth.appDisplayName }}</span>
             </div>
             <NMenu
               :value="activeKey"
               :options="menuOptions"
               @update:value="onMenuSelect"
             />
+            <div v-if="auth.authEnabled" class="app-sider-footer">
+              <div class="app-user">{{ auth.username }}</div>
+              <NButton size="small" tertiary @click="handleLogout">退出登录</NButton>
+            </div>
           </NLayoutSider>
 
           <div class="app-main">
@@ -157,11 +176,25 @@ body,
 .app-brand-text {
   font-size: 18px;
   font-weight: 600;
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .app-sider :deep(.n-menu) {
   flex: 1;
   overflow-y: auto;
+}
+
+.app-sider-footer {
+  flex-shrink: 0;
+  padding: 12px 16px 16px;
+  border-top: 1px solid #efeff5;
+}
+
+.app-user {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
 }
 
 .app-main {

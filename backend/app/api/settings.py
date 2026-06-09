@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.schemas import SystemSettingsResponse, SystemSettingsUpdate
+from app.services.app_settings import get_app_display_name, save_app_display_name
 from app.services.scrape_config import get_global_scrape_config, save_global_scrape_config
 from app.services.tmdb_settings import get_tmdb_config, mask_api_key, save_tmdb_config
 
@@ -16,6 +17,7 @@ def _build_settings_response(db: Session) -> SystemSettingsResponse:
     tmdb = get_tmdb_config(db)
     return SystemSettingsResponse(
         scrape_config=scrape_config,
+        app_display_name=get_app_display_name(db),
         tmdb_api_key_set=bool(tmdb.api_key),
         tmdb_api_key_masked=mask_api_key(tmdb.api_key),
         tmdb_base_url=tmdb.base_url,
@@ -39,6 +41,9 @@ def update_settings_api(
 ) -> SystemSettingsResponse:
     if payload.scrape_config:
         save_global_scrape_config(db, payload.scrape_config)
+
+    if payload.app_display_name is not None:
+        save_app_display_name(db, payload.app_display_name)
 
     if (
         payload.tmdb_api_key is not None

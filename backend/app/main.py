@@ -4,15 +4,17 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.auth import router as auth_router
 from app.api.dashboard import router as dashboard_router
 from app.api.health import router as health_router
 from app.api.router import router as resource_router
 from app.api.settings import router as settings_router
 from app.core.config import get_settings
+from app.core.auth import require_auth
 from app.core.scheduler import shutdown_scheduler, start_scheduler
 from app.services.task_runner import recover_stale_task_runs
 
@@ -39,9 +41,13 @@ app = FastAPI(
 
 api = FastAPI()
 api.include_router(health_router)
-api.include_router(dashboard_router)
-api.include_router(settings_router)
-api.include_router(resource_router)
+api.include_router(auth_router)
+
+protected = APIRouter(dependencies=[Depends(require_auth)])
+protected.include_router(dashboard_router)
+protected.include_router(settings_router)
+protected.include_router(resource_router)
+api.include_router(protected)
 
 app.mount("/api/v1", api)
 
