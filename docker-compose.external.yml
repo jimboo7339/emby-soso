@@ -1,7 +1,8 @@
+# 仅运行应用，连接已有 PostgreSQL / MySQL / Redis（不包含数据库容器）
 services:
   emby-soso:
+    image: ${EMBY_SOSO_IMAGE:-ghcr.io/jimboo7339/emby-soso:latest}
     build: .
-    image: emby-soso:latest
     ports:
       - "${APP_PORT:-8080}:8080"
     environment:
@@ -15,6 +16,7 @@ services:
       DATA_LIBRARY_ROOT: ${DATA_LIBRARY_ROOT:-/data/library}
       SCHEDULER_ENABLED: ${SCHEDULER_ENABLED:-true}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      WEB_WORKERS: ${WEB_WORKERS:-2}
     volumes:
       - ${SOURCE_VOLUME:-./data/source}:/data/source
       - ${LIBRARY_VOLUME:-./data/library}:/data/library

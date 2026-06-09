@@ -1,16 +1,16 @@
+# 与 docker-compose.yml 叠加使用，切换为 MySQL 并禁用内置 PostgreSQL
+# 用法: docker compose -f docker-compose.yml -f docker-compose.mysql.yml up -d
 services:
   emby-soso:
     environment:
       DATABASE_URL: mysql+pymysql://${MYSQL_USER:-emby}:${MYSQL_PASSWORD:-emby}@mysql:3306/${MYSQL_DATABASE:-emby_soso}?charset=utf8mb4
-    depends_on:
+    depends_on: !override
       mysql:
         condition: service_healthy
-      postgres:
-        condition: service_started
-        required: false
 
   postgres:
-    profiles: ["never"]
+    profiles:
+      - never
 
   mysql:
     profiles: []

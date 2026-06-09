@@ -1,7 +1,10 @@
+# 与 docker-compose.yml 叠加使用，启用 Redis 缓存
+# 用法: docker compose -f docker-compose.yml -f docker-compose.redis.yml up -d
 services:
   emby-soso:
     environment:
       REDIS_URL: redis://redis:6379/0
+      REDIS_ENABLED: "true"
     depends_on:
       redis:
         condition: service_healthy
